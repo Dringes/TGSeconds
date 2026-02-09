@@ -1,10 +1,11 @@
 import os
+
 import ptbot
 from dotenv import load_dotenv
 from pytimeparse import parse
 
 
-def render_progressbar(total, iteration, length=BAR_LENGTH, fill="█", zfill="░"):
+def render_progressbar(total, iteration, length=30, fill="█", zfill="░"):
     iteration = min(total, iteration)
     percent = "{0:.1f}".format(100 * iteration / float(total))
     filled_length = int(length * iteration // total)
@@ -19,8 +20,9 @@ def reply(bot, message, total_by_chat, chat_id, text):
         return
 
     total_by_chat[chat_id] = seconds
-    bot.create_countdown(seconds, notify, chat_id=chat_id, bot=bot,
-                         message=message, total_by_chat=total_by_chat)
+    bot.create_countdown(
+        seconds, notify, chat_id=chat_id, bot=bot, message=message, total_by_chat=total_by_chat
+    )
 
 
 def notify(secs_left, chat_id, bot, message, total_by_chat):
@@ -29,11 +31,7 @@ def notify(secs_left, chat_id, bot, message, total_by_chat):
 
     bar = render_progressbar(total, iteration)
 
-    text = (
-        "Время вышло"
-        if secs_left == 0
-        else "Осталось {} секунд!\n{}".format(secs_left, bar)
-    )
+    text = "Время вышло" if secs_left == 0 else "Осталось {} секунд!\n{}".format(secs_left, bar)
 
     if chat_id not in message:
         message[chat_id] = bot.send_message(chat_id, text)
@@ -42,7 +40,6 @@ def notify(secs_left, chat_id, bot, message, total_by_chat):
     bot.update_message(chat_id, message[chat_id], text)
 
 
-# ====== main ======
 def main():
     load_dotenv()
     bot = ptbot.Bot(os.getenv("TG_TOKEN"))
@@ -50,10 +47,9 @@ def main():
     message = {}
     total_by_chat = {}
 
-    bot.reply_on_message(
-        lambda chat_id, text: reply(bot, message, total_by_chat, chat_id, text)
-    )
+    bot.reply_on_message(lambda chat_id, text: reply(bot, message, total_by_chat, chat_id, text))
     bot.run_bot()
+
 
 if __name__ == "__main__":
     main()
